@@ -35,22 +35,24 @@ const appSchema = z.object({
   title: z.object({
     label: z.string(),
   }),
-  link: z.array(
+  link: z.union([
+    z.array(
+      z.object({
+        attributes: z.object({
+          rel: z.string(),
+          type: z.string().optional(),
+          href: z.string().url(),
+        }),
+      }),
+    ),
     z.object({
-      "im:duration": z
-        .object({
-          label: z.string(),
-        })
-        .optional(),
       attributes: z.object({
         rel: z.string(),
         type: z.string().optional(),
         href: z.string().url(),
-        "im:assetType": z.string().optional(),
-        title: z.string().optional(),
       }),
     }),
-  ),
+  ]),
   id: z.object({
     label: z.string().url(),
     attributes: z.object({
@@ -73,7 +75,7 @@ const appSchema = z.object({
     }),
   }),
   "im:releaseDate": z.object({
-    label: z.string().datetime(),
+    label: z.string(),
     attributes: z.object({
       label: z.string(),
     }),
@@ -105,9 +107,9 @@ const applicationsSchema = z.object({
       label: z.string(),
     }),
     updated: z.object({
-      label: z.string().datetime(),
+      label: z.string(),
     }),
-    athor: z.object({
+    author: z.object({
       name: z.object({
         label: z.string(),
       }),
@@ -206,4 +208,10 @@ const api = makeApi([
 
 const zodios = new Zodios("https://itunes.apple.com", api);
 
-export { zodios };
+async function getTopFreeApplications() {
+  const response = await zodios.getTopFreeApplications();
+  console.log("response", response);
+  topFreeApplicationsSchema.parse(response);
+  return response;
+}
+export { getTopFreeApplications, zodios };
