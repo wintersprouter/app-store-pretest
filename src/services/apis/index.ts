@@ -1,5 +1,6 @@
 import { makeApi, Zodios } from "@zodios/core";
 import { z } from "zod";
+import mapError from "../mapError";
 
 const appSchema = z.object({
   "im:name": z.object({
@@ -120,7 +121,7 @@ const applicationsSchema = z.object({
   }),
 });
 
-const topFreeApplicationsSchema = applicationsSchema;
+export const topFreeApplicationsSchema = applicationsSchema;
 
 const resultSchema = z.object({
   screenshotUrls: z.array(z.string().url()),
@@ -168,7 +169,7 @@ const resultSchema = z.object({
   userRatingCount: z.number(),
 });
 
-const lookupSchema = z.object({
+export const lookupSchema = z.object({
   resultCount: z.number(),
   results: z.array(resultSchema),
 });
@@ -206,12 +207,53 @@ const api = makeApi([
   },
 ]);
 
-const zodios = new Zodios("https://itunes.apple.com", api);
+const apiClient = new Zodios("https://itunes.apple.com", api);
+
+apiClient.axios.interceptors.response.use(
+  (response) => {
+    console.log("response", response);
+    return response;
+  },
+  (error: unknown) => {
+    console.error("error", error);
+    return Promise.reject(new Error(mapError(error)));
+  },
+);
 
 async function getTopFreeApplications() {
-  const response = await zodios.getTopFreeApplications();
-  console.log("response", response);
+  const response = await apiClient.get(
+    "/tw/rss/topfreeapplications/limit=100/json",
+  );
   topFreeApplicationsSchema.parse(response);
-  return response;
+  return response.feed.entry;
 }
-export { getTopFreeApplications, zodios };
+
+async function getAppDetails(id: string) {
+  const response = await apiClient.get("/tw/lookup", {
+    queries: {
+      id,
+    },
+  });
+  lookupSchema.parse(response);
+  return response.results[0];
+}
+
+async function getTopFreeApplicationsWithDetails() {
+  const topFreeApps = await getTopFreeApplications();
+  const appDetailsPromises = topFreeApps.map((app) =>
+    getAppDetails(app.id.attributes["im:id"]),
+  );
+  const appDetails = await Promise.all(appDetailsPromises);
+
+  return topFreeApps.map((app, index) => ({
+    ...app,
+    details: appDetails[index],
+  }));
+}
+
+export {
+  apiClient,
+  getAppDetails,
+  getTopFreeApplications,
+  getTopFreeApplicationsWithDetails,
+};
