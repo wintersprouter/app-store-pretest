@@ -1,7 +1,7 @@
 import { getTopFreeApplicationsWithDetails } from "@/services/apis";
 import { useQuery } from "@tanstack/react-query";
 
-export const useTopApps = () => {
+export const useTopFreeApps = () => {
   return useQuery({
     queryKey: ["getTopFreeApplications"],
     queryFn: () => getTopFreeApplicationsWithDetails(),
