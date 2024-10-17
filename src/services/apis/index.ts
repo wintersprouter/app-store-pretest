@@ -2,7 +2,7 @@ import { makeApi, Zodios } from "@zodios/core";
 import { z } from "zod";
 import mapError from "../mapError";
 
-const appSchema = z.object({
+export const appSchema = z.object({
   "im:name": z.object({
     label: z.string(),
   }),
@@ -238,19 +238,6 @@ async function getAppDetails(id: string) {
   return response.results[0];
 }
 
-async function getTopFreeApplicationsWithDetails() {
-  const topFreeApps = await getTopFreeApplications();
-  const appDetailsPromises = topFreeApps.map((app) =>
-    getAppDetails(app.id.attributes["im:id"]),
-  );
-  const appDetails = await Promise.all(appDetailsPromises);
-
-  return topFreeApps.map((app, index) => ({
-    ...app,
-    details: appDetails[index],
-  }));
-}
-
 async function getTopGrossingApplications() {
   const response = await apiClient.get(
     "/tw/rss/topgrossingapplications/limit=10/json",
@@ -263,6 +250,5 @@ export {
   apiClient,
   getAppDetails,
   getTopFreeApplications,
-  getTopFreeApplicationsWithDetails,
   getTopGrossingApplications,
 };

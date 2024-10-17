@@ -1,14 +1,50 @@
 "use client";
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
-import { Divider, Rate } from "antd";
+import { appSchema } from "@/services/apis";
+import { Divider } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { match } from "ts-pattern";
+import { z } from "zod";
+
+const AppCountInPage = 10;
+
 export default function Home() {
+  const [topFreeData, setTopFreeData] = useState<z.infer<typeof appSchema>[]>(
+    [],
+  );
   const { data, status, failureReason } = useTopFreeApps();
   const { topGrossingAppsData, topGrossingAppsStatus } = useTopGrossingApps();
+  const [page, setPage] = useState(1);
+  const totalPage = useMemo(() => Math.ceil(100 / AppCountInPage), []);
 
+  const handleScroll = useCallback(() => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop !==
+      document.documentElement.offsetHeight
+    ) {
+      return;
+    } else if (page < totalPage) {
+      setPage((prev) => prev + 1);
+    }
+  }, [page, totalPage]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  const endIndex = useMemo(() => page * AppCountInPage, [page]);
+
+  useEffect(() => {
+    if (status === "success") {
+      setTopFreeData((prevData) => [...prevData, ...data]);
+    }
+  }, [data, status]);
+
+  console.log(JSON.stringify(topFreeData, null, 2));
   return (
-    <div className="container flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
+    <div className="flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
       {match(topGrossingAppsStatus)
         .with("pending", () => "Loading...")
         .with("error", () => `Error!${failureReason}`)
@@ -50,7 +86,7 @@ export default function Home() {
         .with("error", () => `Error!${failureReason}`)
         .with("success", () => (
           <div>
-            {data?.map((entry, index) => (
+            {topFreeData.slice(0, endIndex)?.map((entry, index) => (
               <div key={entry.id.attributes["im:id"]}>
                 <div className="flex flex-row items-center gap-4">
                   <span>{index + 1}</span>
@@ -67,13 +103,13 @@ export default function Home() {
                       {entry.category.attributes.label}
                     </p>
                     <div className="flex gap-1">
-                      <Rate
+                      {/* <Rate
                         allowHalf
                         style={{ color: "#FE9503" }}
                         disabled
                         defaultValue={entry.details.averageUserRating}
                       />
-                      <p className="text-sm text-gray-500">{`(${entry.details.userRatingCount})`}</p>
+                      <p className="text-sm text-gray-500">{`(${entry.details.userRatingCount})`}</p> */}
                     </div>
                   </div>
                 </div>
