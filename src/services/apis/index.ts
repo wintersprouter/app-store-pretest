@@ -251,9 +251,18 @@ async function getTopFreeApplicationsWithDetails() {
   }));
 }
 
+async function getTopGrossingApplications() {
+  const response = await apiClient.get(
+    "/tw/rss/topgrossingapplications/limit=10/json",
+  );
+  topGrossingApplicationsSchema.parse(response);
+  return response.feed.entry;
+}
+
 export {
   apiClient,
   getAppDetails,
   getTopFreeApplications,
   getTopFreeApplicationsWithDetails,
+  getTopGrossingApplications,
 };
