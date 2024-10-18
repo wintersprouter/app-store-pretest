@@ -21,6 +21,7 @@
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-infinite-scroll-component": "^6.1.0",
     "ts-pattern": "^5.5.0",
     "zod": "^3.23.8"
   },

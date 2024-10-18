@@ -2,11 +2,11 @@
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
 import { APP, APP_ID, APP_NAME, getAppDetails, Result } from "@/services/apis";
-import { Divider, Rate, Spin } from "antd";
+import { Divider, List, Rate, Skeleton } from "antd";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 import { match } from "ts-pattern";
-
 interface TopFreeData {
   id: APP_ID["attributes"]["im:id"];
   name: APP_NAME["label"];
@@ -75,51 +75,46 @@ export default function Home() {
     }
   }, [data, status]);
 
-  useEffect(() => {
-    const fetchAppDetails = async () => {
-      try {
-        setIsFetchingMore(true);
-        const lookUpAppDetails = [...topFreeAppIds]
-          .slice(endIndex - ITEMS_PER_PAGE, endIndex)
-          .join(",");
-        const response = await getAppDetails(lookUpAppDetails);
-        const detailData = response.map((entry) => ({
-          trackId: entry.trackId,
-          averageUserRating: entry.averageUserRating,
-          userRatingCount: entry.userRatingCount,
-        }));
+  const fetchAppDetails = useCallback(async () => {
+    try {
+      setIsFetchingMore(true);
+      const lookUpAppDetails = [...topFreeAppIds]
+        .slice(endIndex - ITEMS_PER_PAGE, endIndex)
+        .join(",");
+      const response = await getAppDetails(lookUpAppDetails);
+      const detailData = response.map((entry) => ({
+        trackId: entry.trackId,
+        averageUserRating: entry.averageUserRating,
+        userRatingCount: entry.userRatingCount,
+      }));
 
-        setTopFreeData((prevData) => [
-          ...prevData.map((entry) => {
-            const detail = detailData.find(
-              (d) => d.trackId === Number(entry.id),
-            );
-            return {
-              ...entry,
-              details: {
-                ...entry.details,
-                averageUserRating:
-                  detail?.averageUserRating ??
-                  entry.details?.averageUserRating ??
-                  0,
-                userRatingCount:
-                  detail?.userRatingCount ??
-                  entry.details?.userRatingCount ??
-                  0,
-              },
-            };
-          }),
-        ]);
-        setIsFetchingMore(false);
-      } catch (error) {
-        setIsFetchingMore(false);
-        console.error("Error fetching app details:", error);
-      }
-    };
-    if (topFreeAppIds.length) {
-      fetchAppDetails();
+      setTopFreeData((prevData) => [
+        ...prevData.map((entry) => {
+          const detail = detailData.find((d) => d.trackId === Number(entry.id));
+          return {
+            ...entry,
+            details: {
+              ...entry.details,
+              averageUserRating:
+                detail?.averageUserRating ??
+                entry.details?.averageUserRating ??
+                0,
+              userRatingCount:
+                detail?.userRatingCount ?? entry.details?.userRatingCount ?? 0,
+            },
+          };
+        }),
+      ]);
+      setIsFetchingMore(false);
+    } catch (error) {
+      console.error(error);
+      setIsFetchingMore(false);
     }
   }, [endIndex, topFreeAppIds]);
+
+  useEffect(() => {
+    fetchAppDetails();
+  }, [fetchAppDetails]);
 
   console.log("topFreeData[0]", JSON.stringify(topFreeData[0], null, 2));
   return (
@@ -162,49 +157,48 @@ export default function Home() {
         ))
         .exhaustive()}
       <Divider />
-      {match(status)
-        .with("pending", () => "Loading...")
-        .with("error", () => `Error!${failureReason}`)
-        .with("success", () => (
-          <ul>
-            {topFreeData.slice(0, endIndex)?.map((entry, index) => (
-              <li key={entry.id} className="md:w-[550px]">
-                <div className="flex flex-row items-center gap-4">
-                  <span>{index + 1}</span>
-                  <Image
-                    src={entry.image}
-                    alt={entry.imageAlt}
-                    width={64} // 16 * 4 (for responsive design)
-                    height={64} // 16 * 4 (for responsive design)
-                    className="rounded-full"
-                  />
-                  <div className="flex flex-col justify-start gap-1">
-                    <h2 className="text-xl font-bold">{entry.name}</h2>
-                    <p className="text-sm text-gray-500">{entry.category}</p>
-                    <div className="flex gap-1">
-                      <Rate
-                        allowHalf
-                        style={{ color: "#FE9503" }}
-                        disabled
-                        value={entry.details?.averageUserRating}
-                      />
-                      <p className="text-sm text-gray-500">
-                        {`(${entry.details?.userRatingCount})`}
-                      </p>
-                    </div>
+      <InfiniteScroll
+        dataLength={topFreeData.length}
+        next={fetchAppDetails}
+        hasMore={page < totalPage}
+        loader={<Skeleton avatar paragraph={{ rows: 3 }} active />}
+        endMessage={topFreeData.length && <Divider plain>已經到底了</Divider>}
+        scrollableTarget="scrollableDiv"
+      >
+        <List
+          itemLayout="horizontal"
+          dataSource={topFreeData.slice(0, endIndex)}
+          renderItem={(entry, index) => (
+            <List.Item key={entry.id}>
+              <div className="flex flex-row items-center gap-4">
+                <span>{index + 1}</span>
+                <Image
+                  src={entry.image}
+                  alt={entry.imageAlt}
+                  width={64}
+                  height={64}
+                  className="rounded-full"
+                />
+                <div className="flex flex-col justify-start gap-1">
+                  <h2 className="text-xl font-bold">{entry.name}</h2>
+                  <p className="text-sm text-gray-500">{entry.category}</p>
+                  <div className="flex gap-1">
+                    <Rate
+                      allowHalf
+                      style={{ color: "#FE9503" }}
+                      disabled
+                      value={entry.details?.averageUserRating}
+                    />
+                    <p className="text-sm text-gray-500">
+                      {`(${entry.details?.userRatingCount})`}
+                    </p>
                   </div>
                 </div>
-                {index < 99 && <Divider />}
-              </li>
-            ))}
-            {isFetchingMore && (
-              <li className="flex justify-center">
-                <Spin />
-              </li>
-            )}
-          </ul>
-        ))
-        .exhaustive()}
+              </div>
+            </List.Item>
+          )}
+        />
+      </InfiniteScroll>
     </div>
   );
 }
