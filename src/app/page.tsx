@@ -3,6 +3,7 @@ import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
 import { APP, APP_ID, APP_NAME, getAppDetails, Result } from "@/services/apis";
 import { Divider, Rate, Spin } from "antd";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { match } from "ts-pattern";
 
@@ -137,9 +138,11 @@ export default function Home() {
                     className="w-20 h-full flex-shrink-0"
                   >
                     <div className="flex flex-row items-center gap-4">
-                      <img
+                      <Image
                         src={entry["im:image"][2].label}
                         alt={entry["im:name"].label}
+                        width={64}
+                        height={64}
                         className="w-20 h-20 rounded-2xl"
                       />
                     </div>
@@ -168,10 +171,12 @@ export default function Home() {
               <div key={entry.id} className="md:w-[550px]">
                 <div className="flex flex-row items-center gap-4">
                   <span>{index + 1}</span>
-                  <img
+                  <Image
                     src={entry.image}
                     alt={entry.imageAlt}
-                    className="w-16 h-16 rounded-full"
+                    width={64} // 16 * 4 (for responsive design)
+                    height={64} // 16 * 4 (for responsive design)
+                    className="rounded-full"
                   />
                   <div className="flex flex-col justify-start gap-1">
                     <h2 className="text-xl font-bold">{entry.name}</h2>
