@@ -1,48 +1,126 @@
 "use client";
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
-import { appSchema } from "@/services/apis";
-import { Divider } from "antd";
+import { APP, APP_ID, APP_NAME, getAppDetails, Result } from "@/services/apis";
+import { Divider, Rate, Spin } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { match } from "ts-pattern";
-import { z } from "zod";
 
-const AppCountInPage = 10;
+interface TopFreeData {
+  id: APP_ID["attributes"]["im:id"];
+  name: APP_NAME["label"];
+  image: APP["im:image"][2]["label"];
+  imageAlt: APP["im:name"]["label"];
+  category: APP["category"]["attributes"]["label"];
+  details?: {
+    averageUserRating: Result["averageUserRating"];
+    userRatingCount: Result["userRatingCount"];
+  };
+}
+
+const ITEMS_PER_PAGE = 10;
 
 export default function Home() {
-  const [topFreeData, setTopFreeData] = useState<z.infer<typeof appSchema>[]>(
-    [],
-  );
+  const [topFreeData, setTopFreeData] = useState<TopFreeData[]>([]);
+  const [topFreeAppIds, setTopFreeAppIds] = useState<TopFreeData["id"][]>([]);
   const { data, status, failureReason } = useTopFreeApps();
   const { topGrossingAppsData, topGrossingAppsStatus } = useTopGrossingApps();
   const [page, setPage] = useState(1);
-  const totalPage = useMemo(() => Math.ceil(100 / AppCountInPage), []);
+  const [isFetchingMore, setIsFetchingMore] = useState(true);
+
+  const totalPage = useMemo(
+    () => Math.ceil(topFreeData.length / ITEMS_PER_PAGE),
+    [topFreeData.length],
+  );
+  const endIndex = useMemo(() => page * ITEMS_PER_PAGE, [page]);
 
   const handleScroll = useCallback(() => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
-      document.documentElement.offsetHeight
+        document.documentElement.offsetHeight ||
+      isFetchingMore ||
+      page >= totalPage
     ) {
       return;
-    } else if (page < totalPage) {
-      setPage((prev) => prev + 1);
     }
-  }, [page, totalPage]);
+    setPage((prevPage) => prevPage + 1);
+  }, [isFetchingMore, page, totalPage]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [handleScroll]);
-
-  const endIndex = useMemo(() => page * AppCountInPage, [page]);
 
   useEffect(() => {
     if (status === "success") {
-      setTopFreeData((prevData) => [...prevData, ...data]);
+      setTopFreeData((prevData) => [
+        ...prevData,
+        ...data.map((entry) => ({
+          ...entry,
+          id: entry.id.attributes["im:id"],
+          name: entry["im:name"].label,
+          image: entry["im:image"][2].label,
+          category: entry.category.attributes.label,
+          imageAlt: entry["im:name"].label,
+        })),
+      ]);
+      setTopFreeAppIds((prevIds) => [
+        ...prevIds,
+        ...data.map((entry) => entry.id.attributes["im:id"]),
+      ]);
+      setIsFetchingMore(false);
     }
   }, [data, status]);
 
-  console.log(JSON.stringify(topFreeData, null, 2));
+  useEffect(() => {
+    const fetchAppDetails = async () => {
+      try {
+        setIsFetchingMore(true);
+        const lookUpAppDetails = [...topFreeAppIds]
+          .slice(endIndex - ITEMS_PER_PAGE, endIndex)
+          .join(",");
+        const response = await getAppDetails(lookUpAppDetails);
+        const detailData = response.map((entry) => ({
+          trackId: entry.trackId,
+          averageUserRating: entry.averageUserRating,
+          userRatingCount: entry.userRatingCount,
+        }));
+
+        setTopFreeData((prevData) => [
+          ...prevData.map((entry) => {
+            const detail = detailData.find(
+              (d) => d.trackId === Number(entry.id),
+            );
+            return {
+              ...entry,
+              details: {
+                ...entry.details,
+                averageUserRating:
+                  detail?.averageUserRating ??
+                  entry.details?.averageUserRating ??
+                  0,
+                userRatingCount:
+                  detail?.userRatingCount ??
+                  entry.details?.userRatingCount ??
+                  0,
+              },
+            };
+          }),
+        ]);
+        setIsFetchingMore(false);
+      } catch (error) {
+        setIsFetchingMore(false);
+        console.error("Error fetching app details:", error);
+      }
+    };
+    if (topFreeAppIds.length) {
+      fetchAppDetails();
+    }
+  }, [endIndex, topFreeAppIds]);
+
+  console.log("topFreeData[0]", JSON.stringify(topFreeData[0], null, 2));
   return (
     <div className="flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
       {match(topGrossingAppsStatus)
@@ -87,35 +165,38 @@ export default function Home() {
         .with("success", () => (
           <div>
             {topFreeData.slice(0, endIndex)?.map((entry, index) => (
-              <div key={entry.id.attributes["im:id"]}>
+              <div key={entry.id} className="md:w-[550px]">
                 <div className="flex flex-row items-center gap-4">
                   <span>{index + 1}</span>
                   <img
-                    src={entry["im:image"][2].label}
-                    alt={entry["im:name"].label}
+                    src={entry.image}
+                    alt={entry.imageAlt}
                     className="w-16 h-16 rounded-full"
                   />
                   <div className="flex flex-col justify-start gap-1">
-                    <h2 className="text-xl font-bold">
-                      {entry["im:name"].label}
-                    </h2>
-                    <p className="text-sm text-gray-500">
-                      {entry.category.attributes.label}
-                    </p>
+                    <h2 className="text-xl font-bold">{entry.name}</h2>
+                    <p className="text-sm text-gray-500">{entry.category}</p>
                     <div className="flex gap-1">
-                      {/* <Rate
+                      <Rate
                         allowHalf
                         style={{ color: "#FE9503" }}
                         disabled
-                        defaultValue={entry.details.averageUserRating}
+                        value={entry.details?.averageUserRating}
                       />
-                      <p className="text-sm text-gray-500">{`(${entry.details.userRatingCount})`}</p> */}
+                      <p className="text-sm text-gray-500">
+                        {`(${entry.details?.userRatingCount})`}
+                      </p>
                     </div>
                   </div>
                 </div>
                 {index < 99 && <Divider />}
               </div>
             ))}
+            {isFetchingMore && (
+              <div className="flex justify-center">
+                <Spin />
+              </div>
+            )}
           </div>
         ))
         .exhaustive()}

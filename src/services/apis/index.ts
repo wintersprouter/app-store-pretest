@@ -2,18 +2,33 @@ import { makeApi, Zodios } from "@zodios/core";
 import { z } from "zod";
 import mapError from "../mapError";
 
-export const appSchema = z.object({
-  "im:name": z.object({
-    label: z.string(),
+const appNameSchema = z.object({
+  label: z.string(),
+});
+
+export type APP_NAME = z.infer<typeof appNameSchema>;
+
+const appImageSchema = z.object({
+  label: z.string().url(),
+  attributes: z.object({
+    height: z.string(),
   }),
-  "im:image": z.array(
-    z.object({
-      label: z.string().url(),
-      attributes: z.object({
-        height: z.string(),
-      }),
-    }),
-  ),
+});
+
+export type APP = z.infer<typeof appSchema>;
+
+const appIdSchema = z.object({
+  label: z.string().url(),
+  attributes: z.object({
+    "im:id": z.string(),
+    "im:bundleId": z.string(),
+  }),
+});
+
+export type APP_ID = z.infer<typeof appIdSchema>;
+export const appSchema = z.object({
+  "im:name": appNameSchema,
+  "im:image": z.array(appImageSchema),
   summary: z.object({
     label: z.string(),
   }),
@@ -54,13 +69,7 @@ export const appSchema = z.object({
       }),
     }),
   ]),
-  id: z.object({
-    label: z.string().url(),
-    attributes: z.object({
-      "im:id": z.string(),
-      "im:bundleId": z.string(),
-    }),
-  }),
+  id: appIdSchema,
   "im:artist": z.object({
     label: z.string(),
     attributes: z.object({
@@ -91,7 +100,7 @@ const linkSchema = z.object({
   }),
 });
 
-const applicationsSchema = z.object({
+export const applicationsSchema = z.object({
   feed: z.object({
     entry: z.array(appSchema),
     link: z.array(linkSchema),
@@ -168,7 +177,7 @@ const resultSchema = z.object({
   price: z.number(),
   userRatingCount: z.number(),
 });
-
+export type Result = z.infer<typeof resultSchema>;
 export const lookupSchema = z.object({
   resultCount: z.number(),
   results: z.array(resultSchema),
@@ -235,7 +244,7 @@ async function getAppDetails(id: string) {
     },
   });
   lookupSchema.parse(response);
-  return response.results[0];
+  return response.results;
 }
 
 async function getTopGrossingApplications() {
