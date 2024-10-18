@@ -166,9 +166,9 @@ export default function Home() {
         .with("pending", () => "Loading...")
         .with("error", () => `Error!${failureReason}`)
         .with("success", () => (
-          <div>
+          <ul>
             {topFreeData.slice(0, endIndex)?.map((entry, index) => (
-              <div key={entry.id} className="md:w-[550px]">
+              <li key={entry.id} className="md:w-[550px]">
                 <div className="flex flex-row items-center gap-4">
                   <span>{index + 1}</span>
                   <Image
@@ -195,14 +195,14 @@ export default function Home() {
                   </div>
                 </div>
                 {index < 99 && <Divider />}
-              </div>
+              </li>
             ))}
             {isFetchingMore && (
-              <div className="flex justify-center">
+              <li className="flex justify-center">
                 <Spin />
-              </div>
+              </li>
             )}
-          </div>
+          </ul>
         ))
         .exhaustive()}
     </div>
