@@ -48,13 +48,6 @@ export default function Home() {
   }, [isFetchingMore, page, totalPage]);
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [handleScroll]);
-
-  useEffect(() => {
     if (status === "success") {
       setTopFreeData((prevData) => [
         ...prevData,
@@ -164,6 +157,7 @@ export default function Home() {
         loader={<Skeleton avatar paragraph={{ rows: 3 }} active />}
         endMessage={topFreeData.length && <Divider plain>已經到底了</Divider>}
         scrollableTarget="scrollableDiv"
+        onScroll={handleScroll}
       >
         <List
           itemLayout="horizontal"
