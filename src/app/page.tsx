@@ -1,7 +1,8 @@
 "use client";
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
-import { APP, APP_ID, APP_NAME, getAppDetails, Result } from "@/services/apis";
+import { getAppDetails } from "@/services/apis";
+import { APP, APP_ID, APP_NAME, Result } from "@/services/apis/types";
 import { Divider, GetProps, Input, List, Rate, Skeleton } from "antd";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
