@@ -1,7 +1,7 @@
 "use client";
+import useAppDetails from "@/hook/useAppDetails";
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
-import { getAppDetails } from "@/services/apis";
 import { APP, APP_ID, APP_NAME, Result } from "@/services/apis/types";
 import { Divider, Input, List, Rate, Skeleton } from "antd";
 import Image from "next/image";
@@ -29,8 +29,8 @@ export default function Home() {
   const [topFreeAppIds, setTopFreeAppIds] = useState<TopFreeData["id"][]>([]);
   const { data, status, failureReason } = useTopFreeApps();
   const { topGrossingAppsData, topGrossingAppsStatus } = useTopGrossingApps();
+  const { appDetailsData, appDetailsStatus } = useAppDetails(topFreeAppIds);
   const [page, setPage] = useState(1);
-  const [isFetchingMore, setIsFetchingMore] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
 
   const totalPage = useMemo(
@@ -43,13 +43,12 @@ export default function Home() {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
         document.documentElement.offsetHeight ||
-      isFetchingMore ||
       page >= totalPage
     ) {
       return;
     }
     setPage((prevPage) => prevPage + 1);
-  }, [isFetchingMore, page, totalPage]);
+  }, [page, totalPage]);
 
   useEffect(() => {
     if (status === "success" && data) {
@@ -66,24 +65,16 @@ export default function Home() {
           title: entry.title.label,
         })),
       ]);
-      setIsFetchingMore(false);
     }
   }, [data, status]);
 
-  const fetchAppDetails = useCallback(async () => {
-    try {
-      setIsFetchingMore(true);
-      if (topFreeAppIds.length === 0) return;
-      const lookUpAppDetails = [...topFreeAppIds]
-        .slice(endIndex - ITEMS_PER_PAGE, endIndex)
-        .join(",");
-      const response = await getAppDetails(lookUpAppDetails);
-      const detailData = response.results.map((entry) => ({
+  useEffect(() => {
+    if (appDetailsStatus === "success" && appDetailsData) {
+      const detailData = appDetailsData.results.map((entry) => ({
         trackId: entry.trackId,
         averageUserRating: entry.averageUserRating,
         userRatingCount: entry.userRatingCount,
       }));
-
       setTopFreeData((prevData) => [
         ...prevData.map((entry) => {
           const detail = detailData.find((d) => d.trackId === Number(entry.id));
@@ -101,16 +92,8 @@ export default function Home() {
           };
         }),
       ]);
-      setIsFetchingMore(false);
-    } catch (error) {
-      console.error(error);
-      setIsFetchingMore(false);
     }
-  }, [endIndex, topFreeAppIds]);
-
-  useEffect(() => {
-    fetchAppDetails();
-  }, [fetchAppDetails]);
+  }, [appDetailsData, appDetailsStatus]);
 
   useEffect(() => {
     if (searchKeyword.length > 0) {
@@ -251,44 +234,74 @@ export default function Home() {
       ])
         //有搜尋關鍵字，且有相符的應用程式
         .with([P.number.gt(0), P.number.gt(0)], () => (
-          <List
-            itemLayout="horizontal"
-            dataSource={topFreeData.filter(
-              (entry) =>
-                entry.name.includes(searchKeyword) ||
-                entry.summary.includes(searchKeyword) ||
-                entry.title.includes(searchKeyword),
-            )}
-            renderItem={(entry, index) => (
-              <List.Item key={entry.id}>
-                <div className="flex flex-row items-center gap-4">
-                  <span>{index + 1}</span>
-                  <Image
-                    src={entry.image}
-                    alt={entry.imageAlt}
-                    width={64}
-                    height={64}
-                    className="rounded-full"
-                  />
-                  <div className="flex flex-col justify-start gap-1">
-                    <h2 className="text-xl font-bold">{entry.name}</h2>
-                    <p className="text-sm text-gray-500">{entry.category}</p>
-                    <div className="flex gap-1">
-                      <Rate
-                        allowHalf
-                        style={{ color: "#FE9503" }}
-                        disabled
-                        value={entry.details?.averageUserRating}
-                      />
-                      <p className="text-sm text-gray-500">
-                        {`(${entry.details?.userRatingCount})`}
-                      </p>
+          <InfiniteScroll
+            dataLength={
+              topFreeData.filter(
+                (entry) =>
+                  entry.name.includes(searchKeyword) ||
+                  entry.summary.includes(searchKeyword) ||
+                  entry.title.includes(searchKeyword),
+              ).length
+            }
+            next={() => {
+              console.log("get next page with search");
+            }}
+            hasMore={
+              page <
+              topFreeData.filter(
+                (entry) =>
+                  entry.name.includes(searchKeyword) ||
+                  entry.summary.includes(searchKeyword) ||
+                  entry.title.includes(searchKeyword),
+              ).length /
+                ITEMS_PER_PAGE
+            }
+            loader={<Skeleton avatar paragraph={{ rows: 3 }} active />}
+            endMessage={<Divider plain>已經到底了</Divider>}
+            scrollableTarget="scrollableDiv"
+            onScroll={handleScroll}
+          >
+            <List
+              itemLayout="horizontal"
+              dataSource={topFreeData
+                .filter(
+                  (entry) =>
+                    entry.name.includes(searchKeyword) ||
+                    entry.summary.includes(searchKeyword) ||
+                    entry.title.includes(searchKeyword),
+                )
+                .slice(0, endIndex)}
+              renderItem={(entry, index) => (
+                <List.Item key={entry.id}>
+                  <div className="flex flex-row items-center gap-4">
+                    <span>{index + 1}</span>
+                    <Image
+                      src={entry.image}
+                      alt={entry.imageAlt}
+                      width={64}
+                      height={64}
+                      className="rounded-full"
+                    />
+                    <div className="flex flex-col justify-start gap-1">
+                      <h2 className="text-xl font-bold">{entry.name}</h2>
+                      <p className="text-sm text-gray-500">{entry.category}</p>
+                      <div className="flex gap-1">
+                        <Rate
+                          allowHalf
+                          style={{ color: "#FE9503" }}
+                          disabled
+                          value={entry.details?.averageUserRating}
+                        />
+                        <p className="text-sm text-gray-500">
+                          {`(${entry.details?.userRatingCount})`}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </List.Item>
-            )}
-          />
+                </List.Item>
+              )}
+            />
+          </InfiniteScroll>
         ))
         //有搜尋關鍵字，但沒有相符的應用程式
         .with([P.number.gt(0), P.number.lt(1)], () => (
@@ -299,7 +312,9 @@ export default function Home() {
         .otherwise(() => (
           <InfiniteScroll
             dataLength={topFreeData.length}
-            next={fetchAppDetails}
+            next={() => {
+              console.log("get next page");
+            }}
             hasMore={page < totalPage}
             loader={<Skeleton avatar paragraph={{ rows: 3 }} active />}
             endMessage={
