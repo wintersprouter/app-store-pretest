@@ -75,11 +75,12 @@ export default function Home() {
   const fetchAppDetails = useCallback(async () => {
     try {
       setIsFetchingMore(true);
+      if (topFreeAppIds.length === 0) return;
       const lookUpAppDetails = [...topFreeAppIds]
         .slice(endIndex - ITEMS_PER_PAGE, endIndex)
         .join(",");
       const response = await getAppDetails(lookUpAppDetails);
-      const detailData = response.map((entry) => ({
+      const detailData = response.results.map((entry) => ({
         trackId: entry.trackId,
         averageUserRating: entry.averageUserRating,
         userRatingCount: entry.userRatingCount,

@@ -1,4 +1,5 @@
 import { makeApi, Zodios } from "@zodios/core";
+import axios from "axios";
 import { z } from "zod";
 import mapError from "../mapError";
 
@@ -238,13 +239,16 @@ async function getTopFreeApplications() {
 }
 
 async function getAppDetails(id: string) {
-  const response = await apiClient.get("/tw/lookup", {
-    queries: {
-      id,
-    },
-  });
-  lookupSchema.parse(response);
-  return response.results;
+  try {
+    const response = await axios.get<Promise<z.infer<typeof lookupSchema>>>(
+      `/api/lookup?ids=${id}`,
+    );
+    lookupSchema.parse(response.data);
+    return response.data;
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
 }
 
 async function getTopGrossingApplications() {
