@@ -2,7 +2,7 @@
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
 import { APP, APP_ID, APP_NAME, getAppDetails, Result } from "@/services/apis";
-import { Divider, List, Rate, Skeleton } from "antd";
+import { Divider, GetProps, Input, List, Rate, Skeleton } from "antd";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -18,6 +18,9 @@ interface TopFreeData {
     userRatingCount: Result["userRatingCount"];
   };
 }
+type SearchProps = GetProps<typeof Input.Search>;
+
+const { Search } = Input;
 
 const ITEMS_PER_PAGE = 10;
 
@@ -34,7 +37,8 @@ export default function Home() {
     [topFreeData.length],
   );
   const endIndex = useMemo(() => page * ITEMS_PER_PAGE, [page]);
-
+  const onSearch: SearchProps["onSearch"] = (value, _e, info) =>
+    console.log(info?.source, value);
   const handleScroll = useCallback(() => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
@@ -112,6 +116,12 @@ export default function Home() {
   console.log("topFreeData[0]", JSON.stringify(topFreeData[0], null, 2));
   return (
     <div className="flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
+      <Search
+        placeholder="搜尋"
+        allowClear
+        onSearch={onSearch}
+        className="w-full md:w-72"
+      />
       {match(topGrossingAppsStatus)
         .with("pending", () => "Loading...")
         .with("error", () => `Error!${failureReason}`)
