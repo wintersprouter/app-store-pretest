@@ -7,13 +7,15 @@ import { Divider, Input, List, Rate, Skeleton } from "antd";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { match } from "ts-pattern";
+import { match, P } from "ts-pattern";
 interface TopFreeData {
   id: APP_ID["attributes"]["im:id"];
   name: APP_NAME["label"];
   image: APP["im:image"][2]["label"];
   imageAlt: APP["im:name"]["label"];
   category: APP["category"]["attributes"]["label"];
+  summary: APP["summary"]["label"];
+  title: APP["title"]["label"];
   details?: {
     averageUserRating: Result["averageUserRating"];
     userRatingCount: Result["userRatingCount"];
@@ -60,6 +62,8 @@ export default function Home() {
           image: entry["im:image"][2].label,
           category: entry.category.attributes.label,
           imageAlt: entry["im:name"].label,
+          summary: entry.summary.label,
+          title: entry.title.label,
         })),
       ]);
       setTopFreeAppIds((prevIds) => [
@@ -130,32 +134,114 @@ export default function Home() {
           <div className="relative top-10 mx-8 mt-2 py-2">
             <h1 className="text-xl font-semibold">推介</h1>
             <div className="overflow-x-auto max-w-xs md:max-w-3xl lg:max-w-5xl">
-              <ol className="flex space-x-4 p-4">
-                {topGrossingAppsData?.map((entry) => (
-                  <li
-                    key={entry.id.attributes["im:id"]}
-                    className="w-20 h-full flex-shrink-0"
-                  >
-                    <div className="flex flex-row items-center gap-4">
-                      <Image
-                        src={entry["im:image"][2].label}
-                        alt={entry["im:name"].label}
-                        width={64}
-                        height={64}
-                        className="w-20 h-20 rounded-2xl"
-                      />
-                    </div>
-                    <div className="flex flex-col justify-start gap-1">
-                      <h2 className="text-md font-bold text-wrap break-words">
-                        {entry["im:name"].label}
-                      </h2>
-                      <p className="text-sm text-gray-500 text-wrap">
-                        {entry.category.attributes.label}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              <ul className="flex space-x-4 p-4">
+                {match([
+                  searchKeyword.length,
+                  topGrossingAppsData?.filter(
+                    (entry) =>
+                      entry["im:name"].label.includes(searchKeyword) ||
+                      entry.summary.label.includes(searchKeyword) ||
+                      entry.title.label.includes(searchKeyword),
+                  ).length,
+                ])
+                  //有搜尋關鍵字，且有相符的應用程式
+                  .with([P.number.gt(0), P.number.gt(0)], () =>
+                    topGrossingAppsData
+                      ?.filter(
+                        (entry) =>
+                          entry["im:name"].label.includes(searchKeyword) ||
+                          entry.summary.label.includes(searchKeyword) ||
+                          entry.title.label.includes(searchKeyword),
+                      )
+                      .map((entry) => (
+                        <li
+                          key={entry.id.attributes["im:id"]}
+                          className="w-20 h-full flex-shrink-0"
+                        >
+                          <div className="flex flex-row items-center gap-4">
+                            <Image
+                              src={entry["im:image"][2].label}
+                              alt={entry["im:name"].label}
+                              width={64}
+                              height={64}
+                              className="w-20 h-20 rounded-2xl"
+                            />
+                          </div>
+                          <div className="flex flex-col justify-start gap-1">
+                            <h2 className="text-md font-bold text-wrap break-words">
+                              {entry["im:name"].label}
+                            </h2>
+                            <p className="text-sm text-gray-500 text-wrap">
+                              {entry.category.attributes.label}
+                            </p>
+                          </div>
+                        </li>
+                      )),
+                  )
+                  //有搜尋關鍵字，但沒有相符的應用程式
+                  .with([P.number.gt(0), P.number.lt(1)], () => (
+                    <li>
+                      <p>查無相關應用程式</p>
+                    </li>
+                  ))
+                  .otherwise(() =>
+                    topGrossingAppsData?.map((entry) => (
+                      <li
+                        key={entry.id.attributes["im:id"]}
+                        className="w-20 h-full flex-shrink-0"
+                      >
+                        <div className="flex flex-row items-center gap-4">
+                          <Image
+                            src={entry["im:image"][2].label}
+                            alt={entry["im:name"].label}
+                            width={64}
+                            height={64}
+                            className="w-20 h-20 rounded-2xl"
+                          />
+                        </div>
+                        <div className="flex flex-col justify-start gap-1">
+                          <h2 className="text-md font-bold text-wrap break-words">
+                            {entry["im:name"].label}
+                          </h2>
+                          <p className="text-sm text-gray-500 text-wrap">
+                            {entry.category.attributes.label}
+                          </p>
+                        </div>
+                      </li>
+                    )),
+                  )}
+                {/* {topGrossingAppsData
+                  ?.filter(
+                    (entry) =>
+                      entry["im:name"].label.includes(searchKeyword) ||
+                      entry.summary.label.includes(searchKeyword) ||
+                      entry.title.label.includes(searchKeyword),
+                  )
+                  .map((entry) => (
+                    <li
+                      key={entry.id.attributes["im:id"]}
+                      className="w-20 h-full flex-shrink-0"
+                    >
+                      <div className="flex flex-row items-center gap-4">
+                        <Image
+                          src={entry["im:image"][2].label}
+                          alt={entry["im:name"].label}
+                          width={64}
+                          height={64}
+                          className="w-20 h-20 rounded-2xl"
+                        />
+                      </div>
+                      <div className="flex flex-col justify-start gap-1">
+                        <h2 className="text-md font-bold text-wrap break-words">
+                          {entry["im:name"].label}
+                        </h2>
+                        <p className="text-sm text-gray-500 text-wrap">
+                          {entry.category.attributes.label}
+                        </p>
+                      </div>
+                    </li>
+                  ))} */}
+              </ul>
             </div>
           </div>
         ))
