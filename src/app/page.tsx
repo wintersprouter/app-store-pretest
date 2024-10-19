@@ -52,7 +52,7 @@ export default function Home() {
   }, [isFetchingMore, page, totalPage]);
 
   useEffect(() => {
-    if (status === "success") {
+    if (status === "success" && data) {
       setTopFreeData((prevData) => [
         ...prevData,
         ...data.map((entry) => ({
@@ -65,10 +65,6 @@ export default function Home() {
           summary: entry.summary.label,
           title: entry.title.label,
         })),
-      ]);
-      setTopFreeAppIds((prevIds) => [
-        ...prevIds,
-        ...data.map((entry) => entry.id.attributes["im:id"]),
       ]);
       setIsFetchingMore(false);
     }
@@ -115,6 +111,33 @@ export default function Home() {
   useEffect(() => {
     fetchAppDetails();
   }, [fetchAppDetails]);
+
+  useEffect(() => {
+    if (searchKeyword.length > 0) {
+      const filteredSearchedIds =
+        data
+          ?.filter(
+            (entry) =>
+              entry["im:name"].label.includes(searchKeyword) ||
+              entry.summary.label.includes(searchKeyword) ||
+              entry.title.label.includes(searchKeyword),
+          )
+          .map((entry) => entry.id.attributes["im:id"]) ?? [];
+
+      setTopFreeAppIds((prevIds) => {
+        const uniqueIds = new Set([...prevIds, ...filteredSearchedIds]);
+        return [...Array.from(uniqueIds)];
+      });
+    } else {
+      const filteredIds =
+        data?.map((entry) => entry.id.attributes["im:id"]) ?? [];
+
+      setTopFreeAppIds((prevIds) => {
+        const uniqueIds = new Set([...prevIds, ...filteredIds]);
+        return [...Array.from(uniqueIds)];
+      });
+    }
+  }, [searchKeyword, data]);
 
   return (
     <div className="flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
@@ -210,86 +233,116 @@ export default function Home() {
                       </li>
                     )),
                   )}
-                {/* {topGrossingAppsData
-                  ?.filter(
-                    (entry) =>
-                      entry["im:name"].label.includes(searchKeyword) ||
-                      entry.summary.label.includes(searchKeyword) ||
-                      entry.title.label.includes(searchKeyword),
-                  )
-                  .map((entry) => (
-                    <li
-                      key={entry.id.attributes["im:id"]}
-                      className="w-20 h-full flex-shrink-0"
-                    >
-                      <div className="flex flex-row items-center gap-4">
-                        <Image
-                          src={entry["im:image"][2].label}
-                          alt={entry["im:name"].label}
-                          width={64}
-                          height={64}
-                          className="w-20 h-20 rounded-2xl"
-                        />
-                      </div>
-                      <div className="flex flex-col justify-start gap-1">
-                        <h2 className="text-md font-bold text-wrap break-words">
-                          {entry["im:name"].label}
-                        </h2>
-                        <p className="text-sm text-gray-500 text-wrap">
-                          {entry.category.attributes.label}
-                        </p>
-                      </div>
-                    </li>
-                  ))} */}
               </ul>
             </div>
           </div>
         ))
         .exhaustive()}
       <Divider />
-      <InfiniteScroll
-        dataLength={topFreeData.length}
-        next={fetchAppDetails}
-        hasMore={page < totalPage}
-        loader={<Skeleton avatar paragraph={{ rows: 3 }} active />}
-        endMessage={topFreeData.length && <Divider plain>已經到底了</Divider>}
-        scrollableTarget="scrollableDiv"
-        onScroll={handleScroll}
-      >
-        <List
-          itemLayout="horizontal"
-          dataSource={topFreeData.slice(0, endIndex)}
-          renderItem={(entry, index) => (
-            <List.Item key={entry.id}>
-              <div className="flex flex-row items-center gap-4">
-                <span>{index + 1}</span>
-                <Image
-                  src={entry.image}
-                  alt={entry.imageAlt}
-                  width={64}
-                  height={64}
-                  className="rounded-full"
-                />
-                <div className="flex flex-col justify-start gap-1">
-                  <h2 className="text-xl font-bold">{entry.name}</h2>
-                  <p className="text-sm text-gray-500">{entry.category}</p>
-                  <div className="flex gap-1">
-                    <Rate
-                      allowHalf
-                      style={{ color: "#FE9503" }}
-                      disabled
-                      value={entry.details?.averageUserRating}
-                    />
-                    <p className="text-sm text-gray-500">
-                      {`(${entry.details?.userRatingCount})`}
-                    </p>
+
+      {match([
+        searchKeyword.length,
+        topFreeData.filter(
+          (entry) =>
+            entry.name.includes(searchKeyword) ||
+            entry.summary.includes(searchKeyword) ||
+            entry.title.includes(searchKeyword),
+        ).length,
+      ])
+        //有搜尋關鍵字，且有相符的應用程式
+        .with([P.number.gt(0), P.number.gt(0)], () => (
+          <List
+            itemLayout="horizontal"
+            dataSource={topFreeData.filter(
+              (entry) =>
+                entry.name.includes(searchKeyword) ||
+                entry.summary.includes(searchKeyword) ||
+                entry.title.includes(searchKeyword),
+            )}
+            renderItem={(entry, index) => (
+              <List.Item key={entry.id}>
+                <div className="flex flex-row items-center gap-4">
+                  <span>{index + 1}</span>
+                  <Image
+                    src={entry.image}
+                    alt={entry.imageAlt}
+                    width={64}
+                    height={64}
+                    className="rounded-full"
+                  />
+                  <div className="flex flex-col justify-start gap-1">
+                    <h2 className="text-xl font-bold">{entry.name}</h2>
+                    <p className="text-sm text-gray-500">{entry.category}</p>
+                    <div className="flex gap-1">
+                      <Rate
+                        allowHalf
+                        style={{ color: "#FE9503" }}
+                        disabled
+                        value={entry.details?.averageUserRating}
+                      />
+                      <p className="text-sm text-gray-500">
+                        {`(${entry.details?.userRatingCount})`}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </List.Item>
-          )}
-        />
-      </InfiniteScroll>
+              </List.Item>
+            )}
+          />
+        ))
+        //有搜尋關鍵字，但沒有相符的應用程式
+        .with([P.number.gt(0), P.number.lt(1)], () => (
+          <div>
+            <p>查無相關應用程式</p>
+          </div>
+        ))
+        .otherwise(() => (
+          <InfiniteScroll
+            dataLength={topFreeData.length}
+            next={fetchAppDetails}
+            hasMore={page < totalPage}
+            loader={<Skeleton avatar paragraph={{ rows: 3 }} active />}
+            endMessage={
+              topFreeData.length && <Divider plain>已經到底了</Divider>
+            }
+            scrollableTarget="scrollableDiv"
+            onScroll={handleScroll}
+          >
+            <List
+              itemLayout="horizontal"
+              dataSource={topFreeData.slice(0, endIndex)}
+              renderItem={(entry, index) => (
+                <List.Item key={entry.id}>
+                  <div className="flex flex-row items-center gap-4">
+                    <span>{index + 1}</span>
+                    <Image
+                      src={entry.image}
+                      alt={entry.imageAlt}
+                      width={64}
+                      height={64}
+                      className="rounded-full"
+                    />
+                    <div className="flex flex-col justify-start gap-1">
+                      <h2 className="text-xl font-bold">{entry.name}</h2>
+                      <p className="text-sm text-gray-500">{entry.category}</p>
+                      <div className="flex gap-1">
+                        <Rate
+                          allowHalf
+                          style={{ color: "#FE9503" }}
+                          disabled
+                          value={entry.details?.averageUserRating}
+                        />
+                        <p className="text-sm text-gray-500">
+                          {`(${entry.details?.userRatingCount})`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </InfiniteScroll>
+        ))}
     </div>
   );
 }
