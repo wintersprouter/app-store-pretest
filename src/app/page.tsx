@@ -3,7 +3,7 @@ import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
 import { getAppDetails } from "@/services/apis";
 import { APP, APP_ID, APP_NAME, Result } from "@/services/apis/types";
-import { Divider, GetProps, Input, List, Rate, Skeleton } from "antd";
+import { Divider, Input, List, Rate, Skeleton } from "antd";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -19,9 +19,6 @@ interface TopFreeData {
     userRatingCount: Result["userRatingCount"];
   };
 }
-type SearchProps = GetProps<typeof Input.Search>;
-
-const { Search } = Input;
 
 const ITEMS_PER_PAGE = 10;
 
@@ -32,14 +29,14 @@ export default function Home() {
   const { topGrossingAppsData, topGrossingAppsStatus } = useTopGrossingApps();
   const [page, setPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(true);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const totalPage = useMemo(
     () => Math.ceil(topFreeData.length / ITEMS_PER_PAGE),
     [topFreeData.length],
   );
   const endIndex = useMemo(() => page * ITEMS_PER_PAGE, [page]);
-  const onSearch: SearchProps["onSearch"] = (value, _e, info) =>
-    console.log(info?.source, value);
+
   const handleScroll = useCallback(() => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
@@ -115,20 +112,22 @@ export default function Home() {
     fetchAppDetails();
   }, [fetchAppDetails]);
 
-  console.log("topFreeData[0]", JSON.stringify(topFreeData[0], null, 2));
   return (
     <div className="flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
-      <Search
-        placeholder="搜尋"
-        allowClear
-        onSearch={onSearch}
-        className="w-full md:w-72"
-      />
+      <div className="fixed top-0 z-10 p-2 bg-[#F9F9F9] w-full flex justify-center border-b-2 border-#E7E7E7">
+        <Input
+          placeholder="搜尋"
+          variant="filled"
+          allowClear
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          className="w-full md:w-72 font-[#959699] "
+        />
+      </div>
       {match(topGrossingAppsStatus)
         .with("pending", () => "Loading...")
         .with("error", () => `Error!${failureReason}`)
         .with("success", () => (
-          <div className="mx-8">
+          <div className="relative top-10 mx-8 mt-2 py-2">
             <h1 className="text-xl font-semibold">推介</h1>
             <div className="overflow-x-auto max-w-xs md:max-w-3xl lg:max-w-5xl">
               <ol className="flex space-x-4 p-4">
