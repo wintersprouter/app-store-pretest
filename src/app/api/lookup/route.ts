@@ -8,7 +8,7 @@ interface ErrorResponse {
 }
 
 interface SuccessResponse {
-  [key: string]: Promise<z.infer<typeof lookupSchema>>;
+  [key: string]: z.infer<typeof lookupSchema>;
 }
 
 export async function GET(
@@ -30,9 +30,8 @@ export async function GET(
     );
     return NextResponse.json(response.data);
   } catch (error) {
-    console.error("Error fetching data from iTunes API:", error);
     return NextResponse.json(
-      { error: "Failed to fetch data" },
+      { error: `Failed to fetch data ${error}` },
       { status: 500 },
     );
   }
