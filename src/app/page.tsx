@@ -60,7 +60,7 @@ export default function Home() {
           ...entry,
           id: entry.id.attributes["im:id"],
           name: entry["im:name"].label,
-          image: entry["im:image"][0].label,
+          image: entry["im:image"][2].label,
           category: entry.category.attributes.label,
           imageAlt: entry["im:name"].label,
           summary: entry.summary.label,

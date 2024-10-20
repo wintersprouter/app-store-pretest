@@ -12,7 +12,7 @@ function GrossingAppItem({ entry }: GrossingAppItemProps) {
     <li key={id.attributes["im:id"]} className="w-20 h-full flex-shrink-0">
       <div className="flex flex-row items-center gap-4">
         <Image
-          src={entry["im:image"][1].label}
+          src={entry["im:image"][2].label}
           alt={entry["im:name"].label}
           width={75}
           height={75}
