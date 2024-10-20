@@ -329,7 +329,7 @@ export default function Home() {
               dataSource={topFreeData.slice(0, endIndex)}
               renderItem={(entry, index) => (
                 <List.Item key={entry.id}>
-                  <div className="flex flex-row items-center gap-4">
+                  <div className="flex flex-row items-center gap-4 w-full md:w-[600px]">
                     <span>{index + 1}</span>
                     <Image
                       src={entry.image}
@@ -349,7 +349,7 @@ export default function Home() {
                           value={entry.details?.averageUserRating}
                         />
                         <p className="text-sm text-gray-500">
-                          {`(${entry.details?.userRatingCount})`}
+                          {`(${entry.details?.userRatingCount.toLocaleString()})`}
                         </p>
                       </div>
                     </div>
