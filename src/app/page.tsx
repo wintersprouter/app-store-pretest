@@ -3,7 +3,7 @@ import useAppDetails from "@/hook/useAppDetails";
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
 import { APP, APP_ID, APP_NAME, Result } from "@/services/apis/types";
-import { Divider, Input, List, Rate, Skeleton } from "antd";
+import { Divider, Input, List, Rate, Skeleton, Spin } from "antd";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -159,7 +159,11 @@ export default function Home() {
         />
       </div>
       {match(topGrossingAppsStatus)
-        .with("pending", () => "Loading...")
+        .with("pending", () => (
+          <Spin tip="Loading" size="large">
+            <div className="p-6 mt-12" />;
+          </Spin>
+        ))
         .with("error", () => `Error!${failureReason}`)
         .with("success", () => (
           <div className="relative top-10 mx-8 mt-2 py-2">
@@ -274,7 +278,7 @@ export default function Home() {
                 .slice(0, endIndex)}
               renderItem={(entry, index) => (
                 <List.Item key={entry.id}>
-                  <div className="flex flex-row items-center gap-4">
+                  <div className="flex flex-row items-center gap-4 w-full md:w-[600px]">
                     <span>{index + 1}</span>
                     <Image
                       src={entry.image}
