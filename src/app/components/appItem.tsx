@@ -1,6 +1,6 @@
 import { List, Rate } from "antd";
 import Image from "next/image";
-import { TopFreeData } from "./page";
+import { TopFreeData } from "../page";
 
 type AppItemProps = {
   entry: TopFreeData;

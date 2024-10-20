@@ -4,11 +4,11 @@ import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
 import { APP, APP_ID, APP_NAME, Result } from "@/services/apis/types";
 import { Divider, Input, List, Skeleton, Spin } from "antd";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { match, P } from "ts-pattern";
-import AppItem from "./appItem";
+import AppItem from "./components/appItem";
+import GrossingAppItem from "./components/grossingAppItem";
 export interface TopFreeData {
   id: APP_ID["attributes"]["im:id"];
   name: APP_NAME["label"];
@@ -173,28 +173,10 @@ export default function Home() {
                           entry.title.label.includes(searchKeyword),
                       )
                       .map((entry) => (
-                        <li
+                        <GrossingAppItem
                           key={entry.id.attributes["im:id"]}
-                          className="w-20 h-full flex-shrink-0"
-                        >
-                          <div className="flex flex-row items-center gap-4">
-                            <Image
-                              src={entry["im:image"][1].label}
-                              alt={entry["im:name"].label}
-                              width={75}
-                              height={75}
-                              className="rounded-2xl"
-                            />
-                          </div>
-                          <div className="flex flex-col justify-start gap-1 mt-4">
-                            <h2 className="text-md font-bold text-wrap break-words">
-                              {entry["im:name"].label}
-                            </h2>
-                            <p className="text-sm text-gray-500 text-wrap">
-                              {entry.category.attributes.label}
-                            </p>
-                          </div>
-                        </li>
+                          entry={entry}
+                        />
                       )),
                   )
                   //有搜尋關鍵字，但沒有相符的應用程式
@@ -205,28 +187,10 @@ export default function Home() {
                   ))
                   .otherwise(() =>
                     topGrossingAppsData?.map((entry) => (
-                      <li
+                      <GrossingAppItem
                         key={entry.id.attributes["im:id"]}
-                        className="w-20 h-full flex-shrink-0"
-                      >
-                        <div className="flex flex-row items-center gap-4">
-                          <Image
-                            src={entry["im:image"][1].label}
-                            alt={entry["im:name"].label}
-                            width={75}
-                            height={75}
-                            className="rounded-2xl"
-                          />
-                        </div>
-                        <div className="flex flex-col justify-start gap-1 mt-4">
-                          <h2 className="text-md font-bold text-wrap break-words">
-                            {entry["im:name"].label}
-                          </h2>
-                          <p className="text-sm text-gray-500 text-wrap">
-                            {entry.category.attributes.label}
-                          </p>
-                        </div>
-                      </li>
+                        entry={entry}
+                      />
                     )),
                   )}
               </ul>
