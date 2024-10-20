@@ -41,16 +41,15 @@ export default function Home() {
   const endIndex = useMemo(() => page * ITEMS_PER_PAGE, [page]);
 
   const searchedIds = useMemo(() => {
-    return (
-      data
-        ?.filter(
-          (entry) =>
-            entry["im:name"].label.includes(searchKeyword) ||
-            entry.summary.label.includes(searchKeyword) ||
-            entry.title.label.includes(searchKeyword),
-        )
-        .map((entry) => entry.id.attributes["im:id"]) ?? []
-    );
+    if (!data) return [];
+    return data
+      ?.filter(
+        (entry) =>
+          entry["im:name"].label.includes(searchKeyword) ||
+          entry.summary.label.includes(searchKeyword) ||
+          entry.title.label.includes(searchKeyword),
+      )
+      .map((entry) => entry.id.attributes["im:id"]);
   }, [data, searchKeyword]);
 
   useEffect(() => {
