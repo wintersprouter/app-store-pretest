@@ -163,7 +163,7 @@ const resultSchema = z.object({
   primaryGenreId: z.number(),
   isVppDeviceBasedLicensingEnabled: z.boolean(),
   sellerName: z.string(),
-  releaseNotes: z.string(),
+  releaseNotes: z.string().optional(),
   version: z.string(),
   wrapperType: z.string(),
   currency: z.string(),
