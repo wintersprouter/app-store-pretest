@@ -209,7 +209,7 @@ export default function Home() {
               if (page < searchedIds.length / ITEMS_PER_PAGE) {
                 setPage((prevPage) => prevPage + 1);
               }
-            }, 300)}
+            }, 850)}
             hasMore={page < searchedIds.length / ITEMS_PER_PAGE}
             loader={
               appDetailsStatus === "pending" && (
@@ -248,7 +248,7 @@ export default function Home() {
               if (page < totalPage) {
                 setPage((prevPage) => prevPage + 1);
               }
-            }, 300)}
+            }, 850)}
             hasMore={page < totalPage}
             loader={
               appDetailsStatus === "pending" && (
