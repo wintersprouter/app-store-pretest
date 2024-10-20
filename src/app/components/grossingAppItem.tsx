@@ -17,6 +17,7 @@ function GrossingAppItem({ entry }: GrossingAppItemProps) {
           width={75}
           height={75}
           className="rounded-2xl"
+          priority
         />
       </div>
       <div className="flex flex-col justify-start gap-1 mt-4">

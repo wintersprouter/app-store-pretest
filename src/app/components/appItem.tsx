@@ -18,6 +18,7 @@ function AppItem({ entry, index }: AppItemProps) {
           width={53}
           height={53}
           className="rounded-full"
+          priority
         />
         <div className="flex flex-col justify-start gap-1">
           <h2 className="text-xl font-bold">{entry.name}</h2>
