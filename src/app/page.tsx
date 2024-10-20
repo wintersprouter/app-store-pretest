@@ -3,11 +3,12 @@ import useAppDetails from "@/hook/useAppDetails";
 import { useTopFreeApps } from "@/hook/useTopFreeApps";
 import { useTopGrossingApps } from "@/hook/useTopGrossingApps";
 import { APP, APP_ID, APP_NAME, Result } from "@/services/apis/types";
-import { Divider, Input, List, Rate, Skeleton, Spin } from "antd";
+import { Divider, Input, List, Skeleton, Spin } from "antd";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { match, P } from "ts-pattern";
+import AppItem from "./appItem";
 export interface TopFreeData {
   id: APP_ID["attributes"]["im:id"];
   name: APP_NAME["label"];
@@ -277,33 +278,7 @@ export default function Home() {
                 )
                 .slice(0, endIndex)}
               renderItem={(entry, index) => (
-                <List.Item key={entry.id}>
-                  <div className="flex flex-row items-center gap-4 w-full md:w-[600px]">
-                    <span>{index + 1}</span>
-                    <Image
-                      src={entry.image}
-                      alt={entry.imageAlt}
-                      width={64}
-                      height={64}
-                      className="rounded-full"
-                    />
-                    <div className="flex flex-col justify-start gap-1">
-                      <h2 className="text-xl font-bold">{entry.name}</h2>
-                      <p className="text-sm text-gray-500">{entry.category}</p>
-                      <div className="flex gap-1">
-                        <Rate
-                          allowHalf
-                          style={{ color: "#FE9503" }}
-                          disabled
-                          value={entry.details?.averageUserRating}
-                        />
-                        <p className="text-sm text-gray-500">
-                          {`(${entry.details?.userRatingCount})`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </List.Item>
+                <AppItem entry={entry} key={entry.id} index={index} />
               )}
             />
           </InfiniteScroll>
@@ -332,33 +307,7 @@ export default function Home() {
               itemLayout="horizontal"
               dataSource={topFreeData.slice(0, endIndex)}
               renderItem={(entry, index) => (
-                <List.Item key={entry.id}>
-                  <div className="flex flex-row items-center gap-4 w-full md:w-[600px]">
-                    <span>{index + 1}</span>
-                    <Image
-                      src={entry.image}
-                      alt={entry.imageAlt}
-                      width={64}
-                      height={64}
-                      className="rounded-full"
-                    />
-                    <div className="flex flex-col justify-start gap-1">
-                      <h2 className="text-xl font-bold">{entry.name}</h2>
-                      <p className="text-sm text-gray-500">{entry.category}</p>
-                      <div className="flex gap-1">
-                        <Rate
-                          allowHalf
-                          style={{ color: "#FE9503" }}
-                          disabled
-                          value={entry.details?.averageUserRating}
-                        />
-                        <p className="text-sm text-gray-500">
-                          {`(${entry.details?.userRatingCount.toLocaleString()})`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </List.Item>
+                <AppItem entry={entry} key={entry.id} index={index} />
               )}
             />
           </InfiniteScroll>
