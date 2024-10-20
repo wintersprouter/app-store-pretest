@@ -15,8 +15,8 @@ function AppItem({ entry, index }: AppItemProps) {
         <Image
           src={entry.image}
           alt={entry.imageAlt}
-          width={64}
-          height={64}
+          width={53}
+          height={53}
           className="rounded-full"
         />
         <div className="flex flex-col justify-start gap-1">

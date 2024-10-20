@@ -61,7 +61,7 @@ export default function Home() {
           ...entry,
           id: entry.id.attributes["im:id"],
           name: entry["im:name"].label,
-          image: entry["im:image"][2].label,
+          image: entry["im:image"][0].label,
           category: entry.category.attributes.label,
           imageAlt: entry["im:name"].label,
           summary: entry.summary.label,
@@ -179,14 +179,14 @@ export default function Home() {
                         >
                           <div className="flex flex-row items-center gap-4">
                             <Image
-                              src={entry["im:image"][2].label}
+                              src={entry["im:image"][1].label}
                               alt={entry["im:name"].label}
-                              width={64}
-                              height={64}
-                              className="w-20 h-20 rounded-2xl"
+                              width={75}
+                              height={75}
+                              className="rounded-2xl"
                             />
                           </div>
-                          <div className="flex flex-col justify-start gap-1">
+                          <div className="flex flex-col justify-start gap-1 mt-4">
                             <h2 className="text-md font-bold text-wrap break-words">
                               {entry["im:name"].label}
                             </h2>
@@ -211,14 +211,14 @@ export default function Home() {
                       >
                         <div className="flex flex-row items-center gap-4">
                           <Image
-                            src={entry["im:image"][2].label}
+                            src={entry["im:image"][1].label}
                             alt={entry["im:name"].label}
-                            width={64}
-                            height={64}
-                            className="w-20 h-20 rounded-2xl"
+                            width={75}
+                            height={75}
+                            className="rounded-2xl"
                           />
                         </div>
-                        <div className="flex flex-col justify-start gap-1">
+                        <div className="flex flex-col justify-start gap-1 mt-4">
                           <h2 className="text-md font-bold text-wrap break-words">
                             {entry["im:name"].label}
                           </h2>
