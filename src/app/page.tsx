@@ -165,7 +165,11 @@ export default function Home() {
             <div className="p-6 mt-12" />;
           </Spin>
         ))
-        .with("error", () => `Error!${failureReason}`)
+        .with("error", () => (
+          <div>
+            <p>{`Error:${failureReason}`}</p>{" "}
+          </div>
+        ))
         .with("success", () => (
           <div className="relative top-10 mx-8 mt-2 py-2">
             <h1 className="text-xl font-semibold">推介</h1>

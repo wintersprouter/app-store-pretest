@@ -15,7 +15,9 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 2 } },
+});
 
 export default function RootLayout({
   children,

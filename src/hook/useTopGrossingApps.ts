@@ -11,9 +11,7 @@ export const useTopGrossingApps = () => {
     queryKey: ["getTopGrossingApplications"],
     queryFn: () => getTopGrossingApplications(),
     staleTime: 5 * 60 * 1000,
-    meta: {
-      errorMessage: "Failed to fetch top grossing applications",
-    },
+    gcTime: 30 * 60 * 1000,
   });
   return {
     topGrossingAppsData,

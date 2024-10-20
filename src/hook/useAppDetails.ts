@@ -15,10 +15,8 @@ function useAppDetails() {
   } = useQuery({
     queryKey: [topFreeAppsKeys.details(topFreeAppIds)],
     queryFn: () => getAppDetails(topFreeAppIds.join(",")),
-    staleTime: 5 * 60 * 1000,
-    meta: {
-      errorMessage: "Failed to fetch app details",
-    },
+    staleTime: 15 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     enabled: !!topFreeAppIds.length,
   });
   return {

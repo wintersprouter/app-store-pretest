@@ -6,9 +6,7 @@ export const useTopFreeApps = () => {
   return useQuery({
     queryKey: [topFreeAppsKeys.list()],
     queryFn: () => getTopFreeApplications(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    meta: {
-      errorMessage: "Failed to fetch top free applications",
-    },
+    staleTime: 15 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
