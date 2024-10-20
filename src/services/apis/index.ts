@@ -55,7 +55,7 @@ async function getTopFreeApplications() {
   const response = await apiClient.get(
     "/tw/rss/topfreeapplications/limit=100/json",
   );
-  topFreeApplicationsSchema.parse(response);
+  topFreeApplicationsSchema.safeParse(response);
   return response.feed.entry;
 }
 
@@ -64,7 +64,7 @@ async function getAppDetails(id: string) {
     const response = await axios.get<Promise<z.infer<typeof lookupSchema>>>(
       `/api/lookup?ids=${id}`,
     );
-    lookupSchema.parse(response.data);
+    lookupSchema.safeParse(response.data);
     return response.data;
   } catch (e) {
     console.log(e);
@@ -76,7 +76,7 @@ async function getTopGrossingApplications() {
   const response = await apiClient.get(
     "/tw/rss/topgrossingapplications/limit=10/json",
   );
-  topGrossingApplicationsSchema.parse(response);
+  topGrossingApplicationsSchema.safeParse(response);
   return response.feed.entry;
 }
 
