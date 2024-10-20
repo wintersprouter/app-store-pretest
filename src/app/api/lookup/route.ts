@@ -1,11 +1,7 @@
 import { lookupSchema } from "@/services/apis";
 import axios from "axios";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-
-interface Request {
-  url: string;
-}
 
 interface ErrorResponse {
   error: string;
@@ -16,7 +12,7 @@ interface SuccessResponse {
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
 ): Promise<NextResponse<ErrorResponse | SuccessResponse>> {
   const { searchParams } = new URL(request.url);
   const ids = searchParams.get("ids");
