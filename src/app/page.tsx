@@ -128,7 +128,7 @@ export default function Home() {
   }, [data, endIndex, searchKeyword.length, searchedIds, setTopFreeAppIds]);
 
   return (
-    <div className="flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
+    <div className="flex flex-col items-center py-8 font-[family-name:var(--font-geist-sans)]">
       <div className="fixed top-0 z-10 p-2 bg-[#F9F9F9] w-full flex justify-center border-b-2 border-#E7E7E7">
         <Input
           placeholder="搜尋"
@@ -146,11 +146,11 @@ export default function Home() {
         ))
         .with("error", () => (
           <div>
-            <p>{`Error:${failureReason}`}</p>{" "}
+            <p>{`Error:${failureReason}`}</p>
           </div>
         ))
         .with("success", () => (
-          <div className="relative top-10 mx-8 mt-2 py-2">
+          <div className="relative top-10 mx-8 mt-2 py-2 items-center justify-center">
             <h1 className="text-xl font-semibold">推介</h1>
             <div className="overflow-x-auto max-w-xs md:max-w-3xl lg:max-w-5xl">
               <ul className="flex space-x-4 p-4">
@@ -246,7 +246,7 @@ export default function Home() {
                 setPage((prevPage) => prevPage + 1);
               }
             }}
-            scrollThreshold={0.99}
+            scrollThreshold={0.85}
             hasMore={page < searchedIds.length / ITEMS_PER_PAGE}
             loader={
               appDetailsStatus === "pending" && (
@@ -286,7 +286,7 @@ export default function Home() {
                 setPage((prevPage) => prevPage + 1);
               }
             }}
-            scrollThreshold={0.99}
+            scrollThreshold={0.85}
             hasMore={page < totalPage}
             loader={
               appDetailsStatus === "pending" && (
