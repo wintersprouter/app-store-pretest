@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# App Store Application
 
-## Getting Started
+## Description
 
-First, run the development server:
+This application is a web-based platform that allows users to browse, search, and view details of various applications available in the App Store. It features a responsive design, infinite scrolling, and real-time search capabilities, providing a seamless user experience.
+
+## Demo
+
+A live demo of the application can be accessed at [App Store](https://app-store-pretest.vercel.app/).
+
+## Installation
+
+### Prerequisites
+
+- Node.js (version 18 or above)
+- npm or yarn
+
+### Steps to Install
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/wintersprouter/app-store-pretest.git
+   cd app-store-pretest
+   ```
+
+2. **Install Dependencies**
+   Using npm:
+
+   ```bash
+   npm install
+   ```
+
+   Or using yarn:
+
+   ```bash
+   yarn install
+   ```
+
+3. **Start the Application**
+   Using npm:
+
+   ```bash
+   npm run dev
+   ```
+
+   Or using yarn:
+
+   ```bash
+   yarn dev
+   ```
+
+4. **Access the Application**
+   Open your browser and navigate to `http://localhost:3000`.
+
+## Deployment
+
+To deploy the application, you can use platforms like Vercel or Netlify. Ensure that you build the application for production using:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+or
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+yarn build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Follow the specific deployment instructions for your chosen platform.
 
-## Learn More
+## Features
 
-To learn more about Next.js, take a look at the following resources:
+- **Application List Display**: Browse a list of free and top-grossing applications.
+- **Search Functionality**: Search for applications using keywords with real-time updates.
+- **Infinite Scrolling**: Automatically load more applications as you scroll down.
+- **Application Details**: View detailed information about each application, including ratings and user reviews.
+- **Responsive Design**: Optimized for various devices to ensure a good user experience.
+- **Error Handling**: Gracefully handle errors when fetching data and display appropriate messages.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend**: React, TypeScript, Ant Design, TailwindCSS
+- **Backend**: Next.js, Axios
+- **State Management**: React Query
