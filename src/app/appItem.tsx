@@ -11,7 +11,7 @@ function AppItem({ entry, index }: AppItemProps) {
   return (
     <List.Item>
       <div className="flex flex-row items-center gap-4 w-full md:w-[600px]">
-        <span>{index + 1}</span>
+        <span className="text-[#9D9E9D]">{index + 1}</span>
         <Image
           src={entry.image}
           alt={entry.imageAlt}
