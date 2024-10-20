@@ -13,16 +13,19 @@ import { topFreeAppsKeys } from "./queries";
 function useAppDetails() {
   const [topFreeAppIds, setTopFreeAppIds] = useState<TopFreeData["id"][]>([]);
 
+  const filteredTopFreeAppIds = topFreeAppIds.filter(
+    (id) => id !== undefined && id !== null && id !== "",
+  );
   const {
     data: appDetailsData,
     status: appDetailsStatus,
     error,
   } = useQuery({
-    queryKey: [topFreeAppsKeys.details(topFreeAppIds)],
-    queryFn: () => getAppDetails(topFreeAppIds.join(",")),
+    queryKey: [topFreeAppsKeys.details(filteredTopFreeAppIds)],
+    queryFn: () => getAppDetails(filteredTopFreeAppIds.join(",")),
     staleTime: 15 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    enabled: !!topFreeAppIds.length,
+    enabled: !!filteredTopFreeAppIds.length,
   });
   return {
     appDetailsData,
