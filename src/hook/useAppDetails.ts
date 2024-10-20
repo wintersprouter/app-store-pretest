@@ -5,6 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { topFreeAppsKeys } from "./queries";
 
+/**
+ * Get the details of the top free applications in Taiwan
+ * @returns appDetailsData, appDetailsStatus, error, setTopFreeAppIds
+ * @example const { appDetailsData, appDetailsStatus, error, setTopFreeAppIds } = useAppDetails();
+ */
 function useAppDetails() {
   const [topFreeAppIds, setTopFreeAppIds] = useState<TopFreeData["id"][]>([]);
 
