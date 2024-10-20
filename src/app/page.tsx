@@ -9,6 +9,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { match, P } from "ts-pattern";
 import AppItem from "./components/appItem";
 import GrossingAppItem from "./components/grossingAppItem";
+import debounce from "./utilities/debounce";
 export interface TopFreeData {
   id: APP_ID["attributes"]["im:id"];
   name: APP_NAME["label"];
@@ -204,12 +205,11 @@ export default function Home() {
         .with([P.number.gt(0), P.number.gt(0)], () => (
           <InfiniteScroll
             dataLength={page * ITEMS_PER_PAGE}
-            next={() => {
+            next={debounce(() => {
               if (page < searchedIds.length / ITEMS_PER_PAGE) {
                 setPage((prevPage) => prevPage + 1);
               }
-            }}
-            scrollThreshold={0.85}
+            }, 300)}
             hasMore={page < searchedIds.length / ITEMS_PER_PAGE}
             loader={
               appDetailsStatus === "pending" && (
@@ -217,9 +217,9 @@ export default function Home() {
               )
             }
             endMessage={<Divider plain>已經到底了</Divider>}
-            scrollableTarget="scrollableDiv"
           >
             <List
+              loading={status === "pending" && appDetailsStatus === "pending"}
               itemLayout="horizontal"
               dataSource={topFreeData
                 .filter(
@@ -244,12 +244,11 @@ export default function Home() {
         .otherwise(() => (
           <InfiniteScroll
             dataLength={endIndex + 1}
-            next={() => {
+            next={debounce(() => {
               if (page < totalPage) {
                 setPage((prevPage) => prevPage + 1);
               }
-            }}
-            scrollThreshold={0.85}
+            }, 300)}
             hasMore={page < totalPage}
             loader={
               appDetailsStatus === "pending" && (
@@ -259,10 +258,10 @@ export default function Home() {
             endMessage={
               topFreeData.length && <Divider plain>已經到底了</Divider>
             }
-            scrollableTarget="scrollableDiv"
           >
             <List
               itemLayout="horizontal"
+              loading={status === "pending" && appDetailsStatus === "pending"}
               dataSource={topFreeData.slice(0, endIndex)}
               renderItem={(entry, index) => (
                 <AppItem entry={entry} key={entry.id} index={index} />
