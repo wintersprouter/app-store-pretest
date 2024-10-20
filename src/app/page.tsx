@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { match, P } from "ts-pattern";
-interface TopFreeData {
+export interface TopFreeData {
   id: APP_ID["attributes"]["im:id"];
   name: APP_NAME["label"];
   image: APP["im:image"][2]["label"];
@@ -26,10 +26,10 @@ const ITEMS_PER_PAGE = 10;
 
 export default function Home() {
   const [topFreeData, setTopFreeData] = useState<TopFreeData[]>([]);
-  const [topFreeAppIds, setTopFreeAppIds] = useState<TopFreeData["id"][]>([]);
   const { data, status, failureReason } = useTopFreeApps();
   const { topGrossingAppsData, topGrossingAppsStatus } = useTopGrossingApps();
-  const { appDetailsData, appDetailsStatus } = useAppDetails(topFreeAppIds);
+  const { appDetailsData, appDetailsStatus, setTopFreeAppIds } =
+    useAppDetails();
   const [page, setPage] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
 
@@ -39,16 +39,28 @@ export default function Home() {
   );
   const endIndex = useMemo(() => page * ITEMS_PER_PAGE, [page]);
 
+  const searchResultAmount = useMemo(
+    () =>
+      topFreeData.filter(
+        (entry) =>
+          entry.name.includes(searchKeyword) ||
+          entry.summary.includes(searchKeyword) ||
+          entry.title.includes(searchKeyword),
+      ).length,
+    [searchKeyword, topFreeData],
+  );
+
   const handleScroll = useCallback(() => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
         document.documentElement.offsetHeight ||
-      page >= totalPage
+      (searchKeyword.length == 0 && page >= totalPage) ||
+      (searchKeyword.length > 0 && page >= searchResultAmount / ITEMS_PER_PAGE)
     ) {
       return;
     }
     setPage((prevPage) => prevPage + 1);
-  }, [page, totalPage]);
+  }, [page, searchKeyword.length, searchResultAmount, totalPage]);
 
   useEffect(() => {
     if (status === "success" && data) {
@@ -107,20 +119,33 @@ export default function Home() {
           )
           .map((entry) => entry.id.attributes["im:id"]) ?? [];
 
+      const startIndex = endIndex - ITEMS_PER_PAGE;
+      const adjustedEndIndex = Math.min(endIndex, filteredSearchedIds.length);
+      const paginatedIds =
+        filteredSearchedIds.slice(startIndex, adjustedEndIndex) ?? [];
+
       setTopFreeAppIds((prevIds) => {
-        const uniqueIds = new Set([...prevIds, ...filteredSearchedIds]);
-        return [...Array.from(uniqueIds)];
+        if (prevIds.length === 0) {
+          return [...paginatedIds];
+        } else if (endIndex % ITEMS_PER_PAGE === 0)
+          return [...prevIds.map((_id, index) => paginatedIds[index])];
+        else {
+          return [...paginatedIds];
+        }
       });
     } else {
       const filteredIds =
-        data?.map((entry) => entry.id.attributes["im:id"]) ?? [];
-
+        data
+          ?.map((entry) => entry.id.attributes["im:id"])
+          .slice(endIndex - ITEMS_PER_PAGE, endIndex) ?? [];
       setTopFreeAppIds((prevIds) => {
-        const uniqueIds = new Set([...prevIds, ...filteredIds]);
-        return [...Array.from(uniqueIds)];
+        if (prevIds.length === 0) {
+          return [...filteredIds];
+        }
+        return [...prevIds.map((_id, index) => filteredIds[index])];
       });
     }
-  }, [searchKeyword, data]);
+  }, [searchKeyword, data, setTopFreeAppIds, endIndex]);
 
   return (
     <div className="flex flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
@@ -223,39 +248,15 @@ export default function Home() {
         .exhaustive()}
       <Divider />
 
-      {match([
-        searchKeyword.length,
-        topFreeData.filter(
-          (entry) =>
-            entry.name.includes(searchKeyword) ||
-            entry.summary.includes(searchKeyword) ||
-            entry.title.includes(searchKeyword),
-        ).length,
-      ])
+      {match([searchKeyword.length, searchResultAmount])
         //有搜尋關鍵字，且有相符的應用程式
         .with([P.number.gt(0), P.number.gt(0)], () => (
           <InfiniteScroll
-            dataLength={
-              topFreeData.filter(
-                (entry) =>
-                  entry.name.includes(searchKeyword) ||
-                  entry.summary.includes(searchKeyword) ||
-                  entry.title.includes(searchKeyword),
-              ).length
-            }
+            dataLength={searchResultAmount}
             next={() => {
               console.log("get next page with search");
             }}
-            hasMore={
-              page <
-              topFreeData.filter(
-                (entry) =>
-                  entry.name.includes(searchKeyword) ||
-                  entry.summary.includes(searchKeyword) ||
-                  entry.title.includes(searchKeyword),
-              ).length /
-                ITEMS_PER_PAGE
-            }
+            hasMore={page < searchResultAmount / ITEMS_PER_PAGE}
             loader={<Skeleton avatar paragraph={{ rows: 3 }} active />}
             endMessage={<Divider plain>已經到底了</Divider>}
             scrollableTarget="scrollableDiv"
