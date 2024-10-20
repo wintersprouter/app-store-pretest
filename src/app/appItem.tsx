@@ -9,8 +9,8 @@ type AppItemProps = {
 
 function AppItem({ entry, index }: AppItemProps) {
   return (
-    <List.Item className="mx-8 animate-fadeIn">
-      <div className="flex flex-row items-center gap-4 md:max-w-3xl lg:max-w-5xl">
+    <List.Item className="mx-8">
+      <div className="flex flex-row items-center gap-4 md:w-[550px]">
         <span className="text-[#9D9E9D]">{index + 1}</span>
         <Image
           src={entry.image}
